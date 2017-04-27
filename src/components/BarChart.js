@@ -6,9 +6,9 @@ export default (target) => {
 
 
   // Mike Bostock "margin conventions"
-  const margin = {top: 40, right: 0, bottom: 0, left: 40},
-      width = 500 + margin.left + margin.right,
-      height = 450 + margin.top + margin.bottom;
+  const margin = {top: 40, right: 0, bottom: 0, left: 40};
+  let width = 500 + margin.left + margin.right;
+  let height = 450 + margin.top + margin.bottom;
 
   // D3 scales = just math
   // x is a function that transforms from "domain" (data) into "range" (usual pixels)
@@ -38,6 +38,8 @@ export default (target) => {
   const svg = d3.select(target).append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
+      .attr("preserveAspectRatio", "xMinYMin meet")
+      .attr("viewBox", "0 0 600 400")
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
