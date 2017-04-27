@@ -3,20 +3,233 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-}
-
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   font-family: sans-serif;
   color: #525252;
+  background-color: #F8F8F8;
+}
+#charts {
+  display: flex;
 }
 
-a {
-  text-decoration: none;
+#charts>div {
+  flex: 1;
 }
 
-.container {
+#BarChart, #PieChart {
+  box-shadow: 0 11px 7px 0 rgba(0, 0, 0, 0.19);
+  background: white;
+  margin: 20px;
+  border-radius: 5px;
+  width: 50%;
+}
+
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+}
+
+path.slice{
+  stroke-width:2px;
+}
+
+polyline{
+  opacity: .3;
+  stroke: black;
+  stroke-width: 2px;
+  fill: none;
+}
+
+.labelValue
+{
+  font-size: 60%;
+  opacity: .5;
+  
+}
+
+.toolTip {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    position: absolute;
+    display: none;
+    width: auto;
+    height: auto;
+    background: none repeat scroll 0 0 white;
+    border: 0 none;
+    border-radius: 8px 8px 8px 8px;
+    box-shadow: -3px 3px 15px #888888;
+    color: black;
+    font: 12px sans-serif;
+    padding: 5px;
+    text-align: center;
+}
+text {
+  font: 12px sans-serif;
+}
+
+
+#toolbar {
+  width: 100%;
+  height: 46px;
+  background-color: #4CAF50;
+  position: relative;
+}
+
+#StartStopButton {
+  background-color: #607D8B;
+  width: 36px;
+  height: 36px;
+  border-radius: 100%;
+  position: absolute;
+  top: 5px;
+  left: 10px;
+}
+
+#Restart {
+  background-color: #607D8B;
+  width: 24px;
+  height: 24px;
+  border-radius: 100%;
+  position: absolute;
+  top: 15px;
+  left: 50px;
+  background-image: url('../images/restart.svg');
+  background-repeat: no-repeat;
+  background-position: center;  
+  background-size: 16px 16px;
+}
+
+#Restart.disabled {
+  opacity: .5;
+}
+
+.startIcon {
+  background-image: url('../images/play.svg');
+  background-repeat: no-repeat;
+  background-position: center;  
+}
+.stopIcon {
+  background-image: url('../images/pause.svg');
+  background-repeat: no-repeat;
+  background-position: center;  
+}
+.flip-container {
+  -webkit-perspective: 1000;
+  -moz-perspective: 1000;
+  -o-perspective: 1000;
+  perspective: 1000;
+
+  border: 1px solid #ccc;
+}
+
+  .flip-container:hover .flipper,  
+  .flip-container.hover .flipper {
+    -webkit-transform: rotateY(180deg);
+    -moz-transform: rotateY(180deg);
+    -o-transform: rotateY(180deg);
+    transform: rotateY(180deg);
+  }
+
+.flip-container, .front, .back {
+/*  width: 320px;
+  height: 427px;*/
+}
+
+.flipper {
+  -webkit-transition: 0.6s;
+  -webkit-transform-style: preserve-3d;
+
+  -moz-transition: 0.6s;
+  -moz-transform-style: preserve-3d;
+  
+  -o-transition: 0.6s;
+  -o-transform-style: preserve-3d;
+
+  transition: 0.6s;
+  transform-style: preserve-3d;
+
+  position: relative;
+}
+
+.front, .back {
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  -o-backface-visibility: hidden;
+  backface-visibility: hidden;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.front {
+  z-index: 2;
+}
+
+.back {
+  -webkit-transform: rotateY(180deg);
+  -moz-transform: rotateY(180deg);
+  -o-transform: rotateY(180deg);
+  transform: rotateY(180deg);
+
+  background: #f8f8f8;
+}
+
+.front .name {
+  font-size: 2em;
+  display: inline-block;
+  background: rgba(33, 33, 33, 0.9);
+  color: #f8f8f8;
+  font-family: Courier;
+  padding: 5px 10px;
+  border-radius: 5px;
+  bottom: 60px;
+  left: 25%;
+  position: absolute;
+  text-shadow: 0.1em 0.1em 0.05em #333;
+
+  -webkit-transform: rotate(-20deg);
+  -moz-transform: rotate(-20deg);
+  -o-transform: rotate(-20deg);
+  transform: rotate(-20deg);
+}
+
+.back-logo {
+  position: absolute;
+  top: 40px;
+  left: 90px;
+  width: 160px;
+  height: 117px;
+}
+
+.back-title {
+  font-weight: bold;
+  color: #00304a;
+  position: absolute;
+  top: 180px;
+  left: 0;
+  right: 0;
   text-align: center;
+  text-shadow: 0.1em 0.1em 0.05em #acd7e5;
+  font-family: Courier;
+  font-size: 2em;
+}
+
+.back div {
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: 0 20px;
+  font-family: arial;
+  line-height: 2em;
 }
