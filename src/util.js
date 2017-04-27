@@ -1,4 +1,4 @@
-import { match, tail, pipe, is, split, map, mergeAll, replace, prop, head, toPairs, always, values } from 'ramda'
+import { match, pipe, is, split, map, mergeAll, replace, toPairs, values } from 'ramda'
 
 // convet string to hash
 export const djb2 = str => {
@@ -39,4 +39,21 @@ export const convertToObject = pipe(
     split('\n'),
     map(lineToObj),
     mergeAll
+)
+
+
+export const groupOn = prop => (acc = {}, obj) => {
+    if (obj === 'restart') return {}
+    if (!obj[prop]) return acc
+    if (acc[obj[prop]]) {
+        return Object.assign(acc, { [obj[prop]]: acc[obj[prop]] + 1})
+    } else {
+        return Object.assign(acc, { [obj[prop]]: 1})
+    }
+}
+
+// Convert JS object to an array of objects
+export const convertToChartData/*: Object => Array<{name: string, value: number}>*/ = pipe(
+    toPairs,
+    map(([name, value]) => ({ name, value }))
 )

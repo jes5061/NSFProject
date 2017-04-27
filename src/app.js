@@ -1,28 +1,29 @@
 import BarChart from './components/BarChart'
 import PieChart from './components/PieChart'     
-import { spawn } from 'child_process'
-import { BehaviorSubject, Observable } from 'rxjs'
-import { match, tail, pipe, is, split, map, mergeAll, replace, prop, head, toPairs, always, values } from 'ramda'
-import { djb2, hashStringToColor, lineToObj, convertToObject } from './util'
+import { spawn } from 'child_process' // allows you to run commands on command line
+import { BehaviorSubject, Observable } from 'rxjs' // reactive progamming, streams
+import { match, pipe, is, split, map, mergeAll, replace, toPairs, values } from 'ramda' //functional programming
+import { djb2, hashStringToColor, lineToObj, convertToObject, convertToChartData, groupOn } from './util' // util
 
-const tshark = spawn('tshark', ['-V'])
-    
-const app = document.getElementById('app')
-
-const updateBar = BarChart("#BarChart")
-const updatePie = PieChart("#PieChart")
+const tshark = spawn('tshark', ['-V']) // runs tshark at command line
+const updateBar = BarChart("#BarChart") // references to update BarChart
+const updatePie = PieChart("#PieChart") // references to update PieChart
 
 //--------------------------
-// Start / Stop button
+// Start / Stop buttons
 //--------------------------
 const startStopButton = document.getElementById('StartStopButton')
 const restartButton = document.getElementById('Restart')
+const startButtonClicked$ = new BehaviorSubject('start')
+const restartButtonClicked$ = new BehaviorSubject('restart')
 
 startStopButton.addEventListener('click', () => {
     if (startStopButton.className === 'startIcon') {
+        startButtonClicked$.next('start')
         startStopButton.className = 'stopIcon'
         restartButton.className = 'disabled'
     } else {
+        startButtonClicked$.next('stop')
         startStopButton.className = 'startIcon'
         restartButton.className = ''
     }
@@ -30,112 +31,62 @@ startStopButton.addEventListener('click', () => {
 
 restartButton.addEventListener('click', () => {
     if (restartButton.className === '') {
-        console.log('Restart')
+        restartButtonClicked$.next('restart')
     }
 })
 
 //--------------------------
 // TShark Stream
 //--------------------------
-const stream = new BehaviorSubject()
-
+let stopped = false 
+const tsharkstream$ = new BehaviorSubject()
 tshark.stdio.forEach(io => io.on('data', (data) => {
     const lines = data.toString().split('\n')
-    lines.forEach(line => stream.next(line))
-}));
+    lines.forEach(line => tsharkstream$.next(line))
+}))
 tshark.on('close', (code) => {
-    console.log(`child process exited with code ${code}`);
-});
+    console.log(`child process exited with code ${code}`)
+})
 
-const objectStream$ = stream
+const objectStream$ = Observable.merge(tsharkstream$, startButtonClicked$)
     .scan((acc, line) => {
+       if (line === 'start') {
+            stopped = false
+            return acc || ""
+        }
+        if (line === 'stop' || stopped) {
+            stopped = true
+            return acc || ""
+        } 
         if (line && line.startsWith('Frame')) {
-        return { Frame: acc }
+            return { Frame: acc }
         }
         if (is(Object, acc)) {
-        return line
+            return line
         }
         return acc + '\n' + line
     }, "")
     .filter(is(Object))
     .map(({ Frame }) => convertToObject(Frame))
 
-const groupOn = (prop, add = always(1)) => (acc = {}, obj) => {
-    if (!obj[prop]) return acc
-    if (acc[obj[prop]]) {
-        return Object.assign(acc, { [obj[prop]]: acc[obj[prop]] + add(obj)})
-    } else {
-        return Object.assign(acc, { [obj[prop]]: add(obj)})
-    }
-}
-
-// Convert JS object to an array of objects
-const convertToChartData/*: Object => Array<{name: string, value: number}>*/ = pipe(
-    toPairs,
-    map(([name, value]) => ({ name, value }))
-)
 
 //--------------------------
 // Body App
 //--------------------------
-const getPacketSize = obj => parseInt(head((obj['Frame Length'] || "").split(' ')))
-
-const interfaceCounts$ = objectStream$.scan(groupOn('Interface id'), {})
-const destinationCounts$ = objectStream$.scan(groupOn('Destination'), {})
-const destinationBandwidth$ = objectStream$.scan(groupOn('Destination', getPacketSize), {})
-const protocols$ = objectStream$.scan(groupOn('Protocol'), {})
-
-
-Observable.combineLatest(interfaceCounts$, destinationCounts$, destinationBandwidth$, protocols$)
+const destinationCounts$ = Observable
+    .merge(objectStream$, restartButtonClicked$)
+    .scan(groupOn('Destination'), {})
     .throttleTime(500)
-    .subscribe(([interfaceCounts, destinationCounts, destinationBandwidth, protocols]) => {
+    .subscribe(destinationCounts => {
         const maxDestinationCounts = d3.max(values(destinationCounts))   
         const minDestinationCounts = d3.min(values(destinationCounts))   
         const destinationCountsScale = d3.scale.linear().domain([maxDestinationCounts, minDestinationCounts]).range([0, 100])
         const destinationCountPercentages = map(destinationCountsScale, destinationCounts)
         updateBar(convertToChartData(destinationCountPercentages))
-        updatePie(convertToChartData(protocols))
     })
 
-
-
-
-
-    // debugger;
-//   BarChartBack.innerHTML = `
-//     <h1>destinationCounts:</h1>
-//     <ul>${toPairs(destinationCountPercentages).map(([key, value]) => 
-//       `<li style="color: ${hashStringToColor(key)}">${key}: ${value}%</li>`).join('')}
-//     </ul>
-//   `
-
-    // PieChartBack.innerHTML = `
-    //   <h1>Protocols:</h1>
-    //   <ul>${toPairs(protocols).map(([key, value]) => 
-    //     `<li style="color: ${hashStringToColor(key)}">${key}: ${value}</li>`).join('')}
-    //   </ul>
-    // `
-
-//   app.innerHTML = `
-//   <div>
-
-//     <h1>interfaceCounts:</h1>
-//     <ul>${toPairs(interfaceCounts).map(([key, value]) => 
-//       `<li style="color: ${hashStringToColor(key)}">${key}: ${value}</li>`).join('')}
-//     </ul>
-
-//     <h1>Protocols:</h1>
-//     <ul>${toPairs(protocols).map(([key, value]) => 
-//       `<li style="color: ${hashStringToColor(key)}">${key}: ${value}</li>`).join('')}
-//     </ul>
-
-//     <h1>destinationBandwidth:</h1>
-//     <ul>${toPairs(destinationBandwidth).map(([key, value]) => 
-//       `<li style="color: ${hashStringToColor(key)}">${key}: ${value}</li>`).join('')}
-//     </ul>
-//   </div>  
-//   // `
-
-
-
-
+const protocols$ = Observable
+    .merge(objectStream$, restartButtonClicked$)
+    .scan(groupOn('Protocol'), {})
+    .throttleTime(500)
+    .subscribe(protocols => updatePie(convertToChartData(protocols)))

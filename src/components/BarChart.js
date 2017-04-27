@@ -1,4 +1,8 @@
-import { prop } from 'ramda'
+// blocks.org 
+// where i got barchart 3, donutchart (updatable donut chart)
+// where was the starter kit that I got
+
+
 import { djb2, hashStringToColor } from '../util'
 
 export default (target) => {
@@ -80,7 +84,7 @@ export default (target) => {
     });
   }
 
-  return function draw(data) {
+  return function draw(data = {}) {
     // measure the domain (for x, unique names) (for y [0,maxvalue])
     // now the scales are finished and usable
     x.domain(data.map(function(d) { return d.name; }));
@@ -102,7 +106,7 @@ export default (target) => {
       div.style("left", d3.event.pageX+10+"px");
       div.style("top", d3.event.pageY-25+"px");
       div.style("display", "inline-block");
-      div.html((d.name)+"<br>"+(d.value)+"%");
+      div.html((d.name)+"<br>"+(d.value));
     });
     bars.on("mouseout", function(d){
       div.style("display", "none");
