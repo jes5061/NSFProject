@@ -5,8 +5,8 @@ export default (target) => {
   var svg = d3.select(target)
     .append("svg")
     .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", "0 0 600 400")
-    .attr('height', '400px')
+    .attr("viewBox", "0 0 600 450")
+    // .attr('height', '530px')
     .append("g")
 
   svg.append("g")

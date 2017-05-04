@@ -10,10 +10,25 @@
     <div id="toolbar">
       <div id="StartStopButton" class='stopIcon'></div>
       <div id="Restart" class='disabled'></div>
+      <div id="Save"></div>
     </div>
     <div id="charts">
-      <div id="BarChart"></div>
-      <div id="PieChart"></div>
+      <div>
+        <h1 class='chartTitle'>Destination Address</h1>
+        <div id="BarChart"></div>
+      </div>
+      <div>
+        <h1 class='chartTitle'>Protocols</h1>
+        <div id="PieChart"></div>
+      </div>
+      <div>
+        <h1 class='chartTitle'>Destination Ports</h1>
+        <div id="DestinationPort"></div>
+      </div>
+      <div>
+        <h1 class='chartTitle'>Source Ports</h1>
+        <div id="SourcePort"></div>
+      </div>
     </div>
   </body>
   <script src="app.js"></script>
